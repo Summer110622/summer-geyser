@@ -27,7 +27,12 @@ package org.geysermc.geyser.translator.protocol.java.entity;
 
 import org.cloudburstmc.math.vector.Vector3f;
 import org.geysermc.geyser.GeyserImpl;
+import org.geysermc.geyser.entity.type.model.CustomModelPlayerEntity;
 import org.geysermc.geyser.entity.EntityDefinition;
+// May need other imports if building the definition directly here
+// To check entity type, already imported: import org.geysermc.mcprotocollib.protocol.data.game.entity.type.EntityType;
+// If checking object data, already imported: import org.geysermc.mcprotocollib.protocol.data.game.entity.object.ObjectData;
+// Example, already imported: import org.geysermc.mcprotocollib.protocol.data.game.entity.object.FallingBlockData;
 import org.geysermc.geyser.entity.type.Entity;
 import org.geysermc.geyser.entity.type.FallingBlockEntity;
 import org.geysermc.geyser.entity.type.FishingHookEntity;
@@ -54,6 +59,33 @@ public class JavaAddEntityTranslator extends PacketTranslator<ClientboundAddEnti
 
     @Override
     public void translate(GeyserSession session, ClientboundAddEntityPacket packet) {
+        // TEMPORARY TEST HIJACK for CustomModelPlayerEntity
+        if (packet.getType() == EntityType.AREA_EFFECT_CLOUD) {
+            java.util.UUID entityUuid = packet.getUuid(); // aliasing to avoid collision with a field
+            Vector3f positionVec = Vector3f.from(packet.getX(), packet.getY(), packet.getZ());
+            Vector3f motionVec = Vector3f.from(packet.getMotionX(), packet.getMotionY(), packet.getMotionZ());
+            float yaw = packet.getYaw();
+            float pitch = packet.getPitch();
+            float headYaw = packet.getHeadYaw(); // Added in later MC versions, might be 0
+
+            // Simplified definition creation for the test - in reality, this would be pre-registered
+            EntityDefinition<CustomModelPlayerEntity> testDefinition =
+                EntityDefinition.builder((s, eid, gid, uuid_ignored, def_ignored, pos, mot, y, p, hy) -> // uuid and def are instance variables in Entity
+                                new CustomModelPlayerEntity(s, eid, gid, entityUuid, def_ignored, pos, mot, y, p, hy, 1) // Test variant ID 1
+                            )
+                            .identifier("minecraft:player")
+                            .height(1.8f).width(0.6f).offset(1.62f)
+                            .build(false);
+
+            CustomModelPlayerEntity customModelEntity = new CustomModelPlayerEntity(session,
+                    packet.getEntityId(), session.getEntityCache().getNextEntityId().incrementAndGet(),
+                    entityUuid, testDefinition, positionVec, motionVec, yaw, pitch, headYaw,
+                    1); // Test variant ID 1
+
+            session.getEntityCache().spawnEntity(customModelEntity);
+            // session.getGeyser().getLogger().debug("Hijacked AreaEffectCloud to spawn CustomModelPlayerEntity with variant 1");
+            return; // Skip normal processing for this entity
+        }
         EntityDefinition<?> definition = Registries.ENTITY_DEFINITIONS.get(packet.getType());
         if (definition == null) {
             session.getGeyser().getLogger().debug("Could not find an entity definition with type " + packet.getType());

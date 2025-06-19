@@ -33,6 +33,8 @@ import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataType;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityDataTypes;
 import org.cloudburstmc.protocol.bedrock.data.entity.EntityFlag;
 import org.cloudburstmc.protocol.bedrock.data.inventory.ItemData;
+import org.geysermc.geyser.animation.ScalingAnimation;
+import org.geysermc.geyser.animation.ScalingAnimationStep;
 import org.geysermc.geyser.entity.EntityDefinition;
 import org.geysermc.geyser.entity.EntityDefinitions;
 import org.geysermc.geyser.entity.type.LivingEntity;
@@ -47,6 +49,7 @@ import org.geysermc.mcprotocollib.protocol.data.game.entity.metadata.type.ByteEn
 import org.geysermc.mcprotocollib.protocol.data.game.entity.player.Hand;
 import org.geysermc.mcprotocollib.protocol.data.game.item.ItemStack;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -257,6 +260,14 @@ public class ArmorStandEntity extends LivingEntity {
 
     @Override
     public InteractionResult interactAt(Hand hand) {
+        // Temporary test for scaling animation
+        if (this.session != null && this.session.getAnimationManager() != null) {
+            ScalingAnimation sampleAnimation = new ScalingAnimation(Arrays.asList(
+                new ScalingAnimationStep(10, 1.5f), // Scale to 1.5f in 10 ticks
+                new ScalingAnimationStep(10, getScale())  // Scale back to original size (using getScale()) in 10 ticks
+            ));
+            this.session.getAnimationManager().startScalingAnimation(this.session, this, sampleAnimation);
+        }
         if (!isMarker && session.getPlayerInventory().getItemInHand(hand).asItem() != Items.NAME_TAG) {
             // Java Edition returns SUCCESS if in spectator mode, but this is overridden with an earlier check on the client
             return InteractionResult.CONSUME;
