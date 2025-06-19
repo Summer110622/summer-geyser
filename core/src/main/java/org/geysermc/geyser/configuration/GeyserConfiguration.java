@@ -33,9 +33,14 @@ import org.geysermc.geyser.api.network.RemoteServer;
 import org.geysermc.geyser.network.CIDRMatcher;
 import org.geysermc.geyser.network.GameProtocol;
 import org.geysermc.geyser.text.GeyserLocale;
+import org.geysermc.geyser.configuration.animation.AnimationDefinitionConfig;
+import org.geysermc.geyser.configuration.animation.AnimationTriggerConfig;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
 
 public interface GeyserConfiguration {
     /**
@@ -180,6 +185,13 @@ public interface GeyserConfiguration {
     boolean isDisableCompression();
 
     int getConfigVersion();
+
+    // Animations
+    @com.fasterxml.jackson.annotation.JsonProperty("animations")
+    Map<String, AnimationDefinitionConfig> getAnimations();
+
+    @com.fasterxml.jackson.annotation.JsonProperty("animation-triggers")
+    List<AnimationTriggerConfig> getAnimationTriggers();
 
     static void checkGeyserConfiguration(GeyserConfiguration geyserConfig, GeyserLogger geyserLogger) {
         if (geyserConfig.getConfigVersion() < CURRENT_CONFIG_VERSION) {

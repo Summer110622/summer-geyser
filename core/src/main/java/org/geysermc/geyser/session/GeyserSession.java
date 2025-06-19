@@ -120,6 +120,7 @@ import org.geysermc.geyser.api.entity.type.player.GeyserPlayerEntity;
 import org.geysermc.geyser.api.event.bedrock.SessionDisconnectEvent;
 import org.geysermc.geyser.api.event.bedrock.SessionLoginEvent;
 import org.geysermc.geyser.api.network.RemoteServer;
+import org.geysermc.geyser.animation.AnimationManager;
 import org.geysermc.geyser.command.GeyserCommandSource;
 import org.geysermc.geyser.configuration.EmoteOffhandWorkaroundOption;
 import org.geysermc.geyser.configuration.GeyserConfiguration;
@@ -284,6 +285,7 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
     private final TagCache tagCache;
     private final WorldCache worldCache;
 
+    private final AnimationManager animationManager;
     @Setter
     private TeleportCache unconfirmedTeleport;
 
@@ -715,6 +717,7 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
         this.structureBlockCache = new StructureBlockCache();
         this.tagCache = new TagCache(this);
         this.worldCache = new WorldCache(this);
+        this.animationManager = new AnimationManager(this.geyser.getConfig());
         this.cameraData = new GeyserCameraData(this);
         this.entityData = new GeyserEntityData(this);
 
@@ -1169,6 +1172,7 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
     protected void tick() {
         try {
             pistonCache.tick();
+            this.animationManager.tick(this);
 
             if (worldBorder.isResizing()) {
                 worldBorder.resize();
@@ -2167,6 +2171,10 @@ public class GeyserSession implements GeyserConnection, GeyserCommandSource {
     @Override
     public @NonNull EntityData entities() {
         return this.entityData;
+    }
+
+    public AnimationManager getAnimationManager() {
+        return this.animationManager;
     }
 
     @Override

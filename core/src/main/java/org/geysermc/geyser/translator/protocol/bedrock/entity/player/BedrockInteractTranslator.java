@@ -33,6 +33,9 @@ import org.geysermc.geyser.entity.type.ChestBoatEntity;
 import org.geysermc.geyser.entity.type.Entity;
 import org.geysermc.geyser.entity.type.living.animal.horse.AbstractHorseEntity;
 import org.geysermc.geyser.item.Items;
+import org.geysermc.geyser.configuration.animation.AnimationTriggerConfig;
+import org.geysermc.mcprotocollib.protocol.data.game.entity.type.EntityType;
+import java.util.List;
 import org.geysermc.geyser.session.GeyserSession;
 import org.geysermc.geyser.translator.protocol.PacketTranslator;
 import org.geysermc.geyser.translator.protocol.Translator;
@@ -65,14 +68,19 @@ public class BedrockInteractTranslator extends PacketTranslator<InteractPacket> 
                 if (session.getPlayerInventory().getItemInHand().asItem() == Items.SHIELD) {
                     break;
                 }
+                if (session.getPlayerInventory().getItemInHand().asItem() == Items.SHIELD) {
+                    break;
+                }
                 ServerboundInteractPacket interactPacket = new ServerboundInteractPacket(entity.getEntityId(),
                         InteractAction.INTERACT, Hand.MAIN_HAND, session.isSneaking());
                 session.sendDownstreamGamePacket(interactPacket);
+                checkAndTriggerAnimation(session, entity, "INTERACT");
                 break;
             case DAMAGE:
                 ServerboundInteractPacket attackPacket = new ServerboundInteractPacket(entity.getEntityId(),
                         InteractAction.ATTACK, Hand.MAIN_HAND, session.isSneaking());
                 session.sendDownstreamGamePacket(attackPacket);
+                checkAndTriggerAnimation(session, entity, "ATTACK");
                 break;
             case LEAVE_VEHICLE:
                 ServerboundPlayerCommandPacket sneakPacket = new ServerboundPlayerCommandPacket(entity.getEntityId(), PlayerState.START_SNEAKING);
@@ -131,6 +139,31 @@ public class BedrockInteractTranslator extends PacketTranslator<InteractPacket> 
                         InventoryUtils.openInventory(session.getPlayerInventoryHolder());
                     }
                 }
+        }
+    }
+
+    private void checkAndTriggerAnimation(GeyserSession session, Entity entity, String interactionTypeString) {
+        if (entity == null || entity.getDefinition() == null || entity.getDefinition().entityType() == null) {
+            return;
+        }
+
+        List<AnimationTriggerConfig> triggers = session.getGeyser().getConfig().getAnimationTriggers();
+        if (triggers == null || triggers.isEmpty()) {
+            return;
+        }
+
+        EntityType javaEntityType = entity.getDefinition().entityType();
+        String javaEntityTypeName = javaEntityType.name();
+
+        for (AnimationTriggerConfig trigger : triggers) {
+            if ("interaction".equalsIgnoreCase(trigger.getType()) &&
+                javaEntityTypeName.equalsIgnoreCase(trigger.getEntityType()) &&
+                interactionTypeString.equalsIgnoreCase(trigger.getInteractionType())) {
+
+                session.getAnimationManager().startScalingAnimation(session, entity, trigger.getAnimationName());
+                // Assuming one trigger per interaction for now. If multiple could apply, remove this break.
+                break;
+            }
         }
     }
 }
