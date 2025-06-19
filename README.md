@@ -50,3 +50,22 @@ you're interested in helping out with Geyser.
 - [GeyserMC's Java Protocol Library](https://github.com/GeyserMC/MCProtocolLib)
 - [TerminalConsoleAppender](https://github.com/Minecrell/TerminalConsoleAppender)
 - [Simple Logging Facade for Java (slf4j)](https://github.com/qos-ch/slf4j)
+
+
+## Experimental Features (Work in Progress)
+
+This version of Geyser includes early implementations of the following experimental features, inspired by techniques used in servers like Cubecraft. Configuration and full functionality are still under development.
+
+### Dynamic Entity Scaling
+- Entities can be made to visually scale (grow/shrink) through animations.
+- Animations (sequences of scaling steps) can be defined in Geyser's configuration.
+- Triggers for these animations (e.g., player interaction with an entity) can also be configured.
+- *Currently implemented: Configuration loading for animations, interaction-based triggers. Spawn-based triggers are planned.*
+
+### Custom Entity Models via "Fake Players"
+- Allows specific Java entities to be represented as player-like entities on Bedrock, which can then use custom models and skins defined in a Bedrock resource pack.
+- This enables server administrators to create custom-looking entities for visual purposes.
+- The mapping of Java entities to these custom "fake player" models (including the specific model/skin ID from the resource pack) will be configurable.
+- *Currently implemented: Core entity class (`CustomModelPlayerEntity`) that spawns as a Bedrock player and can set a variant ID. A temporary test spawns this for AreaEffectClouds. Configuration for mapping and resource pack integration is planned.*
+
+**Note:** These features are experimental. Their configuration and behavior may change in future updates.
